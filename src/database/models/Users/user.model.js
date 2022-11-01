@@ -1,0 +1,48 @@
+const { Schema, model } = require('mongoose')
+
+const userSchema = new Schema({
+  fullname: {
+    type: String,
+    required: true
+  },
+  email: {
+    type: String,
+    unique: true,
+    required: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  roles: {
+    type: Schema.Types.ObjectId
+  },
+  phoneNumber: {
+    type: String,
+    required: true
+  },
+  idNumber: {
+    type: String,
+    required: true
+  },
+  address: {
+    type: String,
+    required: true
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  reservations: [{
+    type: Schema.Types.ObjectId,
+    ref: 'reservations'
+  }]
+})
+
+const user = model('user', userSchema)
+
+module.exports = user
