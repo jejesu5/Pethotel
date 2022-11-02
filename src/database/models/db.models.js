@@ -7,5 +7,6 @@ db.mongoose = mongoose
 
 db.roles = require('./Users/roles.model')
 db.user = require('./Users/user.model')
+db.OTP = require('./users/OTP.model')
 
 module.exports = db
