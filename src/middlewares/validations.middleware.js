@@ -23,7 +23,6 @@ checkFields = [
   check('password').exists().isLength({ min: 5 }).withMessage('La contraseña debe tener al menos 5 caracteres')
     .matches('[A-Z]').withMessage('password must contain an uppercase letter')
     .matches('[0-9]').withMessage('password must contain an number').trim(),
-    check('address', 'La direccion debe tener al menos 5 caracteres').exists().trim().isLength({ min: 5 }),
   validateFields
 ]
 

@@ -8,7 +8,7 @@ const config = require('../libs/config')
 const mailTemplate = require('../libs/mailTemplate')
 const sendMail = require('../libs/sendmail')
 
-exports.signUp = async (fullname, email, password, phoneNumber, idNumber, address, roles = null) => {
+exports.signUp = async (fullname, email, password, phoneNumber, idNumber, roles = null) => {
   try {
     if (!roles) {
       roles = await Roles.findOne({ name: 'client' }).select('_id')
@@ -19,7 +19,6 @@ exports.signUp = async (fullname, email, password, phoneNumber, idNumber, addres
       email,
       idNumber,
       phoneNumber,
-      address,
       password: hashedPassword,
       roles
     })
@@ -63,7 +62,7 @@ exports.signIn = async (email, password) => {
       name: `${user.fullname}`,
       roles: user.roles.name,
       isVerified: user.emailVerified,
-      address: user.address
+      address: user.address || 'No definida'
     }
   } catch (error) {
     throw new Error(error)
