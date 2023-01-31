@@ -8,14 +8,15 @@ const config = require('../libs/config')
 const mailTemplate = require('../libs/mailTemplate')
 const sendMail = require('../libs/sendmail')
 
-exports.signUp = async (fullname, email, password, phoneNumber, idNumber, roles = null) => {
+exports.signUp = async (name, lastName, email, password, phoneNumber, idNumber, roles = null) => {
   try {
     if (!roles) {
       roles = await Roles.findOne({ name: 'client' }).select('_id')
     }
     const hashedPassword = await encription.encrypt(password)
     const newUser = new User({
-      fullname,
+      name,
+      lastName,
       email,
       idNumber,
       phoneNumber,
@@ -25,12 +26,21 @@ exports.signUp = async (fullname, email, password, phoneNumber, idNumber, roles 
     const mensaje = {
       from: process.env.EMAIL_SENDER,
       to: email,
-      subject: 'Bienvenido a RZ Group',
+      subject: 'Bienvenido a Galo',
       html: mailTemplate({
-        title: `¡${fullname}, bienvenido a Galo!`,
-        description: 'perritos perritos perritos!',
+        title: `¡${name}, bienvenido a Galo!`,
+        description: `Es un placer darle la bienvenida a nuestra plataforma de cuidado de animales. Estamos emocionados de tenerlo como parte de nuestra comunidad de amantes de los animales.<br>
+
+        Nos esforzamos por ofrecerle los mejores servicios para el cuidado de sus mascotas, incluyendo hospedaje, guardería y spa. Con nuestra amplia selección de opciones y cuidadores confiables, estamos seguros de que encontrará el lugar perfecto para su mascota.<br>
+        
+        Además, nuestra plataforma es fácil de usar y le permite hacer reservas en línea en pocos clics. Si tiene alguna pregunta o necesita ayuda para navegar por la plataforma, por favor no dude en ponerse en contacto con nosotros. Estamos aquí para ayudarlo.<br>
+        
+        Gracias por elegirnos y esperamos tener noticias suyas pronto.<br>
+        
+        Atentamente,<br>
+        Equipo Galo`,
         cuadro: '',
-        footer: 'mas perritoooos!!!!',
+        footer: '',
         alert: ''
       })
     }

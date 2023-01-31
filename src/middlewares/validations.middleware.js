@@ -101,11 +101,34 @@ async function checkUserExistsById (req, res, next) {
       return res.status(400).send('usuario no encontrado')
     }
 
+    req.body.UserInfo = user
     next()
   } catch (error) {
     return res.status(500).send(error.message)
   }
 }
+
+async function checkClient (req, res, next) {
+  try { 
+    if(!req.body.client){
+      return res.status(400).send('client is required')
+    }
+
+    const findUser = await User.findById(req.body.client)
+
+    if(!findUser){
+      return res.status(400).send('client not found')
+    }
+
+    req.body.user = findUser
+
+    next()
+  }
+  catch (error) {
+    return res.status(500).send(error.message)
+  }
+}
+
 
 module.exports = {
   checkFields,
