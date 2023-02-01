@@ -7,7 +7,8 @@ const reservationSchema = new Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'canceled', 'on progress', 'completed']
+    enum: ['pending', 'canceled', 'on progress', 'completed'],
+    default: 'pending'
   },
   isActive: {
     type: Boolean,
@@ -65,10 +66,10 @@ const reservationSchema = new Schema({
     type: String,
     default: ''
   },
-  spa_services: {
+  spa_services: [{
     type: String,
     enum: ['peluqueria', 'baño basico', 'baño especial', 'corte de uñas', 'baño de oidos', 'enjuague bucal']
-  },
+  }],
   description: {
     type: String,
     default: ''
