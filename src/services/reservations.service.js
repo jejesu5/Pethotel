@@ -5,10 +5,9 @@ const mailTemplate = require('../libs/mailTemplate')
 const sendMail = require('../libs/sendmail')
 const config = require('../libs/config')
 
-exports.createReservation = async (req, res) => {
+exports.createReservation = async (info) => {
   try {
-    const info = req.body
-    const { user } = req.body
+    const { user } = info
 
     const reservation = await Reservations.create(info)
 
@@ -93,25 +92,170 @@ exports.createReservation = async (req, res) => {
       await sendMail(config.emailConfig, mensaje)
     }
 
-    return res.send({
+    return {
       status: 'success',
       msg: 'Reserva creada con éxito',
       data: reservation
-    })
+    }
   } catch (error) {
     throw new Error(error)
   }
 }
 
-exports.getReservations = async (req, res) => {
+exports.getReservations = async (skip, limit) => {
   try {
-    let { skip = 0, limit = 25 } = req.query
     skip = parseInt(skip)
     limit = parseInt(limit)
 
-    const reservations = await Reservations.find({}).skip(skip * limit).limit(limit)
+    const count = await Reservations.count({ isActive: true })
+    const reservations = await Reservations.find({ isActive: true }).populate('client', {
+      name: 1,
+      lastName: 1,
+      email: 1
+    }).skip(skip * limit).limit(limit)
 
-    return reservations
+    return {
+      currentPage: skip,
+      maxPage: Math.ceil(count / limit),
+      data: reservations
+    }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+exports.getReservation = async (id) => {
+  try {
+    const reservation = await Reservations.findById(id).populate('client', {
+      name: 1,
+      lastName: 1,
+      email: 1
+    })
+
+    if (!reservation) {
+      return false
+    }
+
+    return {
+      status: 'success',
+      data: reservation
+    }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+exports.updateReservation = async (id, info) => {
+  try {
+    const toUpdate = await Reservations.findByIdAndUpdate(id, info, { new: true })
+
+    if (!toUpdate) {
+      return false
+    }
+
+    return {
+      status: 'success',
+      msg: 'Reserva actualizada con éxito',
+      data: toUpdate
+    }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+exports.deleteReservation = async (id) => {
+  try {
+    const toDelete = await Reservations.findByIdAndUpdate(id, { isActive: false }, { new: true })
+
+    if (!toDelete) {
+      return false
+    }
+
+    return {
+      status: 'success',
+      msg: 'Reserva eliminada con éxito',
+      data: toDelete
+    }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+exports.cancelReservation = async (id) => {
+  try {
+    const toCancel = await Reservations.findByIdAndUpdate(id, { status: 'canceled' }, { new: true }).populate('client', {
+      name: 1,
+      lastName: 1,
+      email: 1
+    })
+
+    if (!toCancel) {
+      return false
+    }
+
+    const mensaje = {
+      from: process.env.EMAIL_SENDER,
+      to: toCancel.client.email,
+      subject: 'Reserva Cancelada',
+      html: mailTemplate({
+        title: `¡Hola ${toCancel.client.name}!`,
+        description: `Te escribimos para confirmar la cancelación de su reserva con número ${toCancel._id}<br>
+
+        Lamento cualquier inconveniente que esto pueda causarle. Si tiene alguna pregunta o necesita más información, no dude en ponerse en contacto con nosotros.<br>
+        
+        Agradecemos su comprensión y esperamos tener la oportunidad de atenderle en el futuro.`,
+        cuadro: '',
+        footer: '',
+        alert: ''
+      })
+    }
+    await sendMail(config.emailConfig, mensaje)
+
+    return {
+      status: 'success',
+      msg: 'Reserva cancelada con éxito',
+      data: toCancel
+    }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+exports.finishReservation = async (id) => {
+  try {
+    const toFinish = await Reservations.findByIdAndUpdate(id, { status: 'completed' }, { new: true }).populate('client', {
+      name: 1,
+      lastName: 1,
+      email: 1
+    })
+
+    if (!toFinish) {
+      return false
+    }
+
+    const mensaje = {
+      from: process.env.EMAIL_SENDER,
+      to: toFinish.client.email,
+      subject: 'Reserva Completada',
+      html: mailTemplate({
+        title: `¡Hola ${toFinish.client.name}!`,
+        description: `Tu reserva ${toFinish._id} se ha completado<br>
+
+        Esperamos que su experiencia haya sido satisfactoria y que haya disfrutado de nuestros servicios.<br>
+        
+        Si tiene alguna pregunta o necesita más información, no dude en ponerse en contacto con nosotros.`,
+        cuadro: '',
+        footer: 'Gracias por confiar en nosotros.',
+        alert: ''
+      })
+    }
+    await sendMail(config.emailConfig, mensaje)
+
+    return {
+      status: 'success',
+      msg: 'Reserva finalizada con éxito',
+      data: toFinish
+    }
   } catch (error) {
     throw new Error(error)
   }
