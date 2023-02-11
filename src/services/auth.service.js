@@ -8,7 +8,7 @@ const config = require('../libs/config')
 const mailTemplate = require('../libs/mailTemplate')
 const sendMail = require('../libs/sendmail')
 
-exports.signUp = async (name, lastName, email, password, phoneNumber, idNumber, roles = null) => {
+exports.signUp = async (name, lastName, email, password, phoneNumber, idNumber, roles = null, address) => {
   try {
     if (!roles) {
       roles = await Roles.findOne({ name: 'client' }).select('_id')
@@ -21,7 +21,8 @@ exports.signUp = async (name, lastName, email, password, phoneNumber, idNumber, 
       idNumber,
       phoneNumber,
       password: hashedPassword,
-      roles
+      roles,
+      address
     })
     const mensaje = {
       from: process.env.EMAIL_SENDER,

@@ -2,8 +2,8 @@ const services = require('../services/auth.service')
 
 exports.signUp = async (req, res) => {
   try {
-    const { fullname, email, password, phoneNumber, idNumber, roles } = req.body
-    const user = await services.signUp(fullname, email, password, phoneNumber, idNumber, roles)
+    const { name, lastName, email, password, phoneNumber, idNumber, roles, address } = req.body
+    const user = await services.signUp(name, lastName, email, password, phoneNumber, idNumber, roles, address)
     return res.status(200).json({
       message: 'Usuario creado exitosamente',
       user
