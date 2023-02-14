@@ -72,7 +72,7 @@ exports.signIn = async (email, password) => {
       accessToken: token,
       id: user._id,
       email: user.email,
-      name: `${user.fullname}`,
+      name: `${user.name} ${user.lastName}`,
       roles: user.roles.name,
       isVerified: user.emailVerified,
       address: user.address || 'No definida'
