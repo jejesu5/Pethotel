@@ -21,7 +21,7 @@ exports.signIn = async (req, res) => {
     const user = await services.signIn(email, password)
     if (!user) {
       return res.status(401).json({
-        message: 'Contraseña incorrecta'
+        msg: 'Contraseña incorrecta'
       })
     }
     return res.status(200).json({
