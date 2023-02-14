@@ -14,10 +14,11 @@ exports.signUp = async (name, lastName, email, password, phoneNumber, idNumber, 
       roles = await Roles.findOne({ name: 'client' }).select('_id')
     }
     const hashedPassword = await encription.encrypt(password)
+    const formatEmail = email.toLowerCase()
     const newUser = new User({
       name,
       lastName,
-      email,
+      formatEmail,
       idNumber,
       phoneNumber,
       password: hashedPassword,
@@ -26,7 +27,7 @@ exports.signUp = async (name, lastName, email, password, phoneNumber, idNumber, 
     })
     const mensaje = {
       from: process.env.EMAIL_SENDER,
-      to: email,
+      to: formatEmail,
       subject: 'Bienvenido a Galo',
       html: mailTemplate({
         title: `¡${name}, bienvenido a Galo!`,
@@ -57,7 +58,8 @@ exports.signUp = async (name, lastName, email, password, phoneNumber, idNumber, 
 
 exports.signIn = async (email, password) => {
   try {
-    const user = await User.findOne({ email }).populate('roles')
+    const formatEmail = email.toLowerCase()
+    const user = await User.findOne({ email: formatEmail }).populate('roles')
     const validation = await encription.compareEncrypt(password, user.password)
 
     if (!validation) {

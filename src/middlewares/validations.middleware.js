@@ -80,9 +80,12 @@ checkVerifyEmail = [
 // check if an user exists
 async function checkUserExists (req, res, next) {
   try {
-    const mail = await User.findOne({ email: req.body.email })
+    const formatEmail = req.body.email.toLowerCase()
+    const mail = await User.findOne({ email: formatEmail })
     if (!mail) {
-      return res.status(400).send('usuario no encontrado')
+      return res.status(400).send({
+        msg: 'Usuario no encontrado'
+      })
     }
     next()
   } catch (error) {
