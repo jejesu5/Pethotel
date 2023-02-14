@@ -13,16 +13,15 @@ function validateFields (req, res, next) {
 }
 // checkFields for SignUp
 checkFields = [
-  check('fullname').exists()
+  check('name').exists()
     .withMessage('Nombre completo es obligatorio').trim()
     .isString().isLength({ min: 3 }).withMessage('El nombre debe tener al menos 3 caracteres'),
   check('idNumber', 'el id debe tener al menos 5 caracteres').exists().trim().isLength({ min: 5 }),
-  check('phoneNumber', 'phoneNumber is required').exists().trim().isLength({ min: 10 }),
+  check('phoneNumber', 'Número de telefono invalido').exists().trim().isLength({ min: 5 }),
   check('email', 'email format is incorrect').exists()
     .trim().isEmail().normalizeEmail({ gmail_remove_dots: false }),
   check('password').exists().isLength({ min: 5 }).withMessage('La contraseña debe tener al menos 5 caracteres')
-    .matches('[A-Z]').withMessage('password must contain an uppercase letter')
-    .matches('[0-9]').withMessage('password must contain an number').trim(),
+    .matches('[0-9]').withMessage('La contraseña debe tener al menos un número').trim(),
   validateFields
 ]
 
