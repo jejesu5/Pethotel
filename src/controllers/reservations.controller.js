@@ -137,3 +137,18 @@ exports.finishReservation = async (req, res) => {
     })
   }
 }
+
+exports.getUserReservations = async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const reservations = await services.getUserReservations(id)
+
+    return res.status(200).send(reservations)
+  } catch (error) {
+    return res.status(500).send({
+      status: 'error',
+      message: error.message
+    })
+  }
+}

@@ -7,9 +7,9 @@ const config = require('../libs/config')
 
 exports.createReservation = async (info) => {
   try {
-    const { user } = info
-
     const reservation = await Reservations.create(info)
+
+    const user = await User.findByIdAndUpdate(info.client, { $push: { reservations: reservation._id } })
 
     if (!user.address && info.address_pickup) {
       await User.findByIdAndUpdate(user._id, { address: info.address_pickup })
@@ -255,6 +255,19 @@ exports.finishReservation = async (id) => {
       status: 'success',
       msg: 'Reserva finalizada con éxito',
       data: toFinish
+    }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+exports.getUserReservations = async (id) => {
+  try {
+    const reservations = await Reservations.find({ client: id, isActive: true })
+
+    return {
+      status: 'success',
+      data: reservations
     }
   } catch (error) {
     throw new Error(error)

@@ -18,7 +18,7 @@ exports.signUp = async (name, lastName, email, password, phoneNumber, idNumber, 
     const newUser = new User({
       name,
       lastName,
-      formatEmail,
+      email: formatEmail,
       idNumber,
       phoneNumber,
       password: hashedPassword,
