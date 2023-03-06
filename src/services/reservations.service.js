@@ -5,6 +5,22 @@ const mailTemplate = require('../libs/mailTemplate')
 const sendMail = require('../libs/sendmail')
 const config = require('../libs/config')
 
+function obtenerFechasPorDia (diaSemana, fechaInicio, fechaFin) {
+  const ajusteZonaHoraria = fechaInicio.getTimezoneOffset() * 60 * 1000 // Convertir minutos a milisegundos
+  const fechas = []
+
+  for (let i = 0; i <= (fechaFin - fechaInicio) / (24 * 60 * 60 * 1000); i++) {
+    const fecha = new Date(fechaInicio.getTime() + i * 24 * 60 * 60 * 1000)
+    const fechaLocal = new Date(fecha.getTime() - ajusteZonaHoraria)
+
+    if (fechaLocal.getDay() === diaSemana) {
+      fechas.push(fechaLocal)
+    }
+  }
+
+  return fechas
+}
+
 exports.createReservation = async (info) => {
   try {
     const reservation = await Reservations.create(info)

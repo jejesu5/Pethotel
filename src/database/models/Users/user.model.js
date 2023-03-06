@@ -40,6 +40,9 @@ const userSchema = new Schema({
     type: Boolean,
     default: false
   },
+  guarderia_start: {
+    type: Date
+  },
   createdAt: {
     type: Date,
     default: Date.now
