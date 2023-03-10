@@ -5,7 +5,7 @@ const mailTemplate = require('../libs/mailTemplate')
 const sendMail = require('../libs/sendmail')
 const config = require('../libs/config')
 
-function obtenerFechasPorDia (diaSemana, fechaInicio, fechaFin) {
+/* function obtenerFechasPorDia (diaSemana, fechaInicio, fechaFin) {
   const ajusteZonaHoraria = fechaInicio.getTimezoneOffset() * 60 * 1000 // Convertir minutos a milisegundos
   const fechas = []
 
@@ -19,7 +19,7 @@ function obtenerFechasPorDia (diaSemana, fechaInicio, fechaFin) {
   }
 
   return fechas
-}
+} */
 
 exports.createReservation = async (info) => {
   try {
@@ -34,10 +34,10 @@ exports.createReservation = async (info) => {
       const mensaje = {
         from: process.env.EMAIL_SENDER,
         to: user.email,
-        subject: 'Confirmación de Reserva',
+        subject: 'Reserva Creada',
         html: mailTemplate({
           title: `¡Hola ${user.name}!`,
-          description: `Es un placer poder confirmarle que su reserva ha sido creada con éxito. A continuación se incluye la información de su reserva:<br><br>
+          description: `Es un placer poder informarle que su reserva ha sido creada con éxito. A continuación se incluye la información de su reserva:<br><br>
   
           Número de reserva: ${reservation._id}<br>
           Tipo de servicio: ${reservation.service_type}<br>
@@ -60,10 +60,10 @@ exports.createReservation = async (info) => {
       const mensaje = {
         from: process.env.EMAIL_SENDER,
         to: user.email,
-        subject: 'Confirmación de Reserva',
+        subject: 'Reserva Creada',
         html: mailTemplate({
           title: `¡Hola ${user.name}!`,
-          description: `Es un placer poder confirmarle que su reserva ha sido creada con éxito. A continuación se incluye la información de su reserva:<br><br>
+          description: `Es un placer poder informarle que su reserva ha sido creada con éxito. A continuación se incluye la información de su reserva:<br><br>
   
           Número de reserva: ${reservation._id}<br>
           Tipo de servicio: ${reservation.service_type}<br>
@@ -86,10 +86,10 @@ exports.createReservation = async (info) => {
       const mensaje = {
         from: process.env.EMAIL_SENDER,
         to: user.email,
-        subject: 'Confirmación de Reserva',
+        subject: 'Reserva Creada',
         html: mailTemplate({
           title: `¡Hola ${user.name}!`,
-          description: `Es un placer poder confirmarle que su reserva ha sido creada con éxito. A continuación se incluye la información de su reserva:<br><br>
+          description: `Es un placer poder informarle que su reserva ha sido creada con éxito. A continuación se incluye la información de su reserva:<br><br>
   
           Número de reserva: ${reservation._id}<br>
           Tipo de servicio: ${reservation.service_type}<br>
@@ -215,7 +215,7 @@ exports.cancelReservation = async (id) => {
       subject: 'Reserva Cancelada',
       html: mailTemplate({
         title: `¡Hola ${toCancel.client.name}!`,
-        description: `Te escribimos para confirmar la cancelación de su reserva con número ${toCancel._id}<br>
+        description: `Te escribimos para informar la cancelación de su reserva con número ${toCancel._id}<br>
 
         Lamento cualquier inconveniente que esto pueda causarle. Si tiene alguna pregunta o necesita más información, no dude en ponerse en contacto con nosotros.<br>
         
@@ -231,6 +231,116 @@ exports.cancelReservation = async (id) => {
       status: 'success',
       msg: 'Reserva cancelada con éxito',
       data: toCancel
+    }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+exports.confirmReservation = async (id) => {
+  try {
+    const toConfirm = await Reservations.findByIdAndUpdate(id, { status: 'confirmed' }, { new: true }).populate('client', {
+      name: 1,
+      lastName: 1,
+      email: 1
+    })
+
+    if (!toConfirm) {
+      return false
+    }
+
+    if (toConfirm.service_type === 'hotel') {
+      const mensaje = {
+        from: process.env.EMAIL_SENDER,
+        to: toConfirm.client.email,
+        subject: 'Reserva Confirmada',
+        html: mailTemplate({
+          title: `¡Hola ${toConfirm.client.name}!`,
+          description: `Te escribimos para confirmar la reserva con número ${toConfirm._id}<br>
+          Tu reserva ha sido confirmada por nuestro equipo y estamos listos para atenderle en la fecha correspondiente.<br>
+  
+          Si desea hacer algún cambio en su reserva, puede hacerlo dentro de la plataforma o ponerse en contacto con nosotros.<br>
+  
+          A continuación se incluye la información de su reserva:<br><br>
+  
+          Número de reserva: ${toConfirm._id}<br>
+          Tipo de servicio: ${toConfirm.service_type}<br>
+          Fecha de llegada: ${toConfirm.start_date}<br>
+          Fecha de salida: ${toConfirm.end_date}<br>
+          Pickup: ${toConfirm.pickUp ? 'Sí' : 'No'}<br>
+          ${toConfirm.pickUp ? `Dirección de recogida: ${toConfirm.address_pickup} <br>` : null}
+          Número de mascotas: ${toConfirm.pets_count}<br><br>
+  
+          `,
+          cuadro: '',
+          footer: '',
+          alert: ''
+        })
+      }
+      await sendMail(config.emailConfig, mensaje)
+    }
+    if (toConfirm.service_type === 'spa') {
+      const mensaje = {
+        from: process.env.EMAIL_SENDER,
+        to: toConfirm.client.email,
+        subject: 'Reserva Confirmada',
+        html: mailTemplate({
+          title: `¡Hola ${toConfirm.client.name}!`,
+          description: `Te escribimos para confirmar la reserva con número ${toConfirm._id}<br>
+          Tu reserva ha sido confirmada por nuestro equipo y estamos listos para atenderle en la fecha correspondiente. 
+  
+          Si desea hacer algún cambio en su reserva, puede hacerlo dentro de la plataforma o ponerse en contacto con nosotros.<br>
+  
+          A continuación se incluye la información de su reserva:<br><br>
+  
+          Número de reserva: ${toConfirm._id}<br>
+          Tipo de servicio: ${toConfirm.service_type}<br>
+          fecha de reserva: ${toConfirm.start_date}<br>
+          Servicios solicitados: ${toConfirm.spa_services.join(' , ')}<br>
+          Pickup: ${toConfirm.pickUp ? 'Sí' : 'No'}<br>
+          ${toConfirm.pickUp ? `Dirección de recogida: ${toConfirm.address_pickup} <br>` : null}
+          Número de mascotas: ${toConfirm.pets_count}<br><br>
+  
+          `,
+          cuadro: '',
+          footer: '',
+          alert: ''
+        })
+      }
+      await sendMail(config.emailConfig, mensaje)
+    }
+    if (toConfirm.service_type === 'guarderia') {
+      const mensaje = {
+        from: process.env.EMAIL_SENDER,
+        to: toConfirm.client.email,
+        subject: 'Reserva Confirmada',
+        html: mailTemplate({
+          title: `¡Hola ${toConfirm.client.name}!`,
+          description: `Te escribimos para confirmar la reserva con número ${toConfirm._id}<br>
+          Tu reserva ha sido confirmada por nuestro equipo y estamos listos para atenderle en la fecha correspondiente.<br>
+  
+          Si desea hacer algún cambio en su reserva, puede hacerlo dentro de la plataforma o ponerse en contacto con nosotros.<br>
+  
+          A continuación se incluye la información de su reserva:<br><br>
+  
+          Número de reserva: ${toConfirm._id}<br>
+          Tipo de servicio: ${toConfirm.service_type}<br>
+          Dias de guarderia: ${toConfirm.guarderia_dias}<br>
+          Pickup: ${toConfirm.pickUp ? 'Sí' : 'No'}<br>
+          ${toConfirm.pickUp ? `Dirección de recogida: ${toConfirm.address_pickup} <br>` : null}
+          Número de mascotas: ${toConfirm.pets_count}<br><br>
+  
+          `,
+          cuadro: '',
+          footer: '',
+          alert: ''
+        })
+      }
+      await sendMail(config.emailConfig, mensaje)
+    }
+    return {
+      status: 'success',
+      msg: 'Reserva confirmada con éxito'
     }
   } catch (error) {
     throw new Error(error)

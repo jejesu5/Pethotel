@@ -7,6 +7,8 @@ router.post('/cancel/:id', controller.cancelReservation)
 
 router.post('/complete/:id', controller.finishReservation)
 
+router.post('/confirm/:id', controller.confirmReservation)
+
 router.get('/', controller.getReservations)
 
 router.get('/:id', controller.getReservation)

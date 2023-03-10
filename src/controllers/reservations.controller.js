@@ -15,7 +15,7 @@ exports.createReservation = async (req, res) => {
 
 exports.getReservations = async (req, res) => {
   try {
-    const { skip, limit } = req.query
+    const { skip = 0, limit = 10 } = req.query
 
     const reservations = await services.getReservations(skip, limit)
 
@@ -99,6 +99,28 @@ exports.cancelReservation = async (req, res) => {
     const { id } = req.params
 
     const reservation = await services.cancelReservation(id)
+
+    if (!reservation) {
+      return res.status(404).send({
+        status: 'error',
+        message: 'Reservation not found'
+      })
+    }
+
+    return res.status(200).send(reservation)
+  } catch (error) {
+    return res.status(500).send({
+      status: 'error',
+      message: error.message
+    })
+  }
+}
+
+exports.confirmReservation = async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const reservation = await services.confirmReservation(id)
 
     if (!reservation) {
       return res.status(404).send({

@@ -2,7 +2,7 @@ const services = require('../services/user.service')
 
 exports.getAllUser = async (req, res) => {
   try {
-    const { skip, limit } = req.query
+    const { skip = 0, limit = 10 } = req.query
     const users = await services.getAllUsers(skip, limit)
     return res.send(users)
   } catch (error) {

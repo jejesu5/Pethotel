@@ -7,7 +7,7 @@ const reservationSchema = new Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'canceled', 'on progress', 'completed'],
+    enum: ['pending', 'confirmed', 'canceled', 'on progress', 'completed'],
     default: 'pending'
   },
   isActive: {
