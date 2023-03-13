@@ -118,21 +118,19 @@ exports.createReservation = async (info) => {
   }
 }
 
-exports.getReservations = async (skip, limit) => {
+exports.getReservations = async () => {
   try {
-    skip = parseInt(skip)
-    limit = parseInt(limit)
-
+    
     const count = await Reservations.count({ isActive: true })
     const reservations = await Reservations.find({ isActive: true }).populate('client', {
       name: 1,
       lastName: 1,
       email: 1
-    }).skip(skip * limit).limit(limit)
+    })
 
     return {
-      currentPage: skip,
-      maxPage: Math.ceil(count / limit),
+      status: 'success',
+      count,
       data: reservations
     }
   } catch (error) {

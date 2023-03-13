@@ -15,9 +15,8 @@ exports.createReservation = async (req, res) => {
 
 exports.getReservations = async (req, res) => {
   try {
-    const { skip = 0, limit = 10 } = req.query
 
-    const reservations = await services.getReservations(skip, limit)
+    const reservations = await services.getReservations()
 
     return res.status(200).send(reservations)
   } catch (error) {
