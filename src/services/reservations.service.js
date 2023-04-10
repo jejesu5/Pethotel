@@ -1,5 +1,7 @@
+/* eslint-disable */
 const db = require('../database/models/db.models')
 const Reservations = db.reservations
+const Guarderia = db.guarderia
 const User = db.user
 const mailTemplate = require('../libs/mailTemplate')
 const sendMail = require('../libs/sendmail')
@@ -21,11 +23,69 @@ const config = require('../libs/config')
   return fechas
 } */
 
+function checkStartDay (selectDays) {
+  console.log(selectDays)
+  let days = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado']
+  let bank = []
+  let getCurrentDay = new Date().getDay()
+  let fecha = new Date()
+  for(let i = 0; i < selectDays.length; i++) {
+    if (days.indexOf(selectDays[i]) === getCurrentDay) {
+      continue
+    } else {
+      let day = days.indexOf(selectDays[i])
+      let daysUntilNext = (day + 7 - getCurrentDay) % 7;
+      // Crear una nueva fecha a partir de la fecha actual
+      let nextday = new Date(fecha.getTime() + (daysUntilNext * 24 * 60 * 60 * 1000));
+      // Ajustar la nueva fecha a la fecha del próximo día de la semana
+      nextday.setDate(nextday.getDate() + (day - nextday.getDay() + 7) % 7);
+      bank.push(nextday)
+    }
+  }
+  return bank
+}
+
+function addAMonth () {
+  const fecha = new Date()
+  // Obtiene el mes actual
+  const mesActual = fecha.getMonth()
+  // Agrega un mes
+  fecha.setMonth(mesActual + 1)
+  // Obtiene el nuevo mes y año
+  return fecha
+}
+
 exports.createReservation = async (info) => {
   try {
-    const reservation = await Reservations.create(info)
+    let user
+    let reservation
+    let guarderiaService
+    if (info.service_type === 'guarderia') {
+      let infoArray = checkStartDay(info.guarderia_dias)
+      let reservationsCreated = []
+      for (let i = 0; i < infoArray.length; i++) {
+        let infoToCreate = info
+        infoToCreate.start_date = new Date(infoArray[i])
+        reservation = await Reservations.create(infoToCreate)
+        reservationsCreated.push(reservation._id)
+      }
 
-    const user = await User.findByIdAndUpdate(info.client, { $push: { reservations: reservation._id } })
+      const guarderia = {
+        active: true,
+        start_date: new Date().toISOString().slice(0, 10),
+        end_date: addAMonth().toISOString().slice(0, 10),
+        pickUp: info.pickUp,
+        guarderia_dias: info.guarderia_dias,
+        guarderia_duracion: info.guarderia_duracion ?? "8 horas",
+        pets: info.pets,
+        client: info.client
+      }
+      guarderiaService = await Guarderia.create(guarderia)
+      user = await User.findByIdAndUpdate(info.client, { $push: { reservations: reservationsCreated } })
+    } else {
+      reservation = await Reservations.create(info)
+      user = await User.findByIdAndUpdate(info.client, { $push: { reservations: reservation._id } })
+    }
 
     if (!user.address && info.address_pickup) {
       await User.findByIdAndUpdate(user._id, { address: info.address_pickup })
@@ -83,29 +143,30 @@ exports.createReservation = async (info) => {
     }
 
     if (reservation.service_type === 'guarderia') {
-      const mensaje = {
+      const mensaje1 = {
         from: process.env.EMAIL_SENDER,
         to: user.email,
-        subject: 'Reserva Creada',
+        subject: 'Servicio de guarderia creado',
         html: mailTemplate({
           title: `¡Hola ${user.name}!`,
-          description: `Es un placer poder informarle que su reserva ha sido creada con éxito. A continuación se incluye la información de su reserva:<br><br>
+          description: `Es un placer informarle que se ha activado un servicio de guarderia. A continuación se incluye la información:<br><br>
   
           Número de reserva: ${reservation._id}<br>
-          Tipo de servicio: ${reservation.service_type}<br>
-          Dias de guarderia: ${reservation.guarderia_dias}<br>
-          Duración de guarderia: ${reservation.guarderia_duracion}<br>
-          Pickup: ${reservation.pickUp ? 'Sí' : 'No'}<br>
-          ${reservation.pickUp ? `Dirección de recogida: ${reservation.address_pickup} <br>` : null}
-          Número de mascotas: ${reservation.pets_count}<br><br>
+          Inicio del servicio: ${guarderiaService.start_date.toLocaleDateString()}<br>
+          Fin del servicio: ${guarderiaService.end_date.toLocaleDateString()}<br>
+          Dias de guarderia: ${guarderiaService.guarderia_dias}<br>
+          Duración de guarderia: ${guarderiaService.guarderia_duracion}<br>
+          Pickup: ${guarderiaService.pickUp ? 'Sí' : 'No'}<br>
+          Número de mascotas: ${guarderiaService.pets?.length}<br><br>
       
-      Si tiene alguna pregunta o necesita hacer algún cambio en su reserva, por favor no dude en ponerse en contacto con nosotros. Estamos a su disposición para ayudarle en lo que necesite.`,
+     Recuerde que este servicio tiene una duración de 1 mes, luego de este es necesario renovar la mensualidad para seguir usandolo.`,
           cuadro: '',
           footer: 'Gracias por confiar en nosotros.',
           alert: ''
         })
       }
-      await sendMail(config.emailConfig, mensaje)
+  
+      await sendMail(config.emailConfig, mensaje1)	
     }
 
     return {

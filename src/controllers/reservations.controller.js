@@ -15,17 +15,16 @@ exports.createReservation = async (req, res) => {
 
 exports.getReservations = async (req, res) => {
   try {
+    const reservations = await services.getReservations();
 
-    const reservations = await services.getReservations()
-
-    return res.status(200).send(reservations)
+    return res.status(200).send(reservations);
   } catch (error) {
     return res.status(500).send({
-      status: 'error',
-      message: error.message
-    })
+      status: "error",
+      message: error.message,
+    });
   }
-}
+};
 
 exports.getReservation = async (req, res) => {
   try {

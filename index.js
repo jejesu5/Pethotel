@@ -8,6 +8,8 @@ const initialSetup = require('./src/libs/initialSetup')
 const routes = require('./src/routes')
 require('dotenv').config()
 const app = express()
+const schedule = require('node-schedule')
+const scheduleJob = require('./src/libs/checkDayReservation')
 const { proxy, scriptUrl } = require('rtsp-relay')(app)
 initialSetup()
 
@@ -15,6 +17,13 @@ const handler = proxy({
   url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4',
   // if your RTSP stream need credentials, include them in the URL as above
   verbose: false
+})
+
+schedule.scheduleJob('0 0 * * *', function() {
+  console.log('entro')
+  scheduleJob.endGuarderiaService()
+  scheduleJob.checkDayReservation()
+  console.log('salio')
 })
 
 const PORT = process.env.PORT || 3001
@@ -37,6 +46,14 @@ app.use((req, res, next) => {
 
 require('./src/database/db')
 app.use('/api', routes)
+
+app.get('/', (req, res) => {
+  return res.send({
+    message: 'PetHotel API',
+    version: '1.0.0',
+    author: 'Jesus Arenas'
+  })
+})
 // the endpoint our RTSP uses
 app.ws('/api/stream', handler)
 
