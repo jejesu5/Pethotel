@@ -15,6 +15,8 @@ router.get('/:id', controller.getReservation)
 
 router.get('/client/:id', controller.getUserReservations)
 
+router.get('/guarderia/:id', controller.getUserGuarderia)
+
 router.put('/:id', controller.updateReservation)
 
 router.delete('/:id', controller.deleteReservation)

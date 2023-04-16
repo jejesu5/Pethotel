@@ -172,3 +172,19 @@ exports.getUserReservations = async (req, res) => {
     })
   }
 }
+
+exports.getUserGuarderia = async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const guarderia = await services.getUserGuarderia(id)
+
+    return res.status(200).send(guarderia)
+
+  } catch (error) {
+    return res.status(500).send({
+      status: 'error',
+      message: error.message
+    })
+  }
+}

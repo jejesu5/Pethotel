@@ -448,11 +448,24 @@ exports.finishReservation = async (id) => {
 
 exports.getUserReservations = async (id) => {
   try {
-    const reservations = await Reservations.find({ client: id, isActive: true })
+    const reservations = await Reservations.find({ client: id, isActive: true }).sort({ createdAt: -1 })
 
     return {
       status: 'success',
       data: reservations
+    }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+exports.getUserGuarderia = async (id) => {
+  try {
+    const guarderias = await Guarderia.find({ client: id, active: true })
+
+    return {
+      status: 'success',
+      data: guarderias
     }
   } catch (error) {
     throw new Error(error)
